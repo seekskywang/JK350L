@@ -1,0 +1,993 @@
+
+
+
+/*
+*********************************************************************************************************
+*                                             包含的文件
+*********************************************************************************************************
+*/
+
+//本文件为10个通道的设置页面 最复杂的一个页面
+#include  "include.h"
+//游标  分行和列
+struct CUR CurDisp = {0};
+struct CUR CurDispOld= {0};
+union Data_union DataSave;
+//设置菜单10个通道的下拉框
+struct RDispPara DisLog[HCOL][HCAM] = {0};
+//10个通道里的设置
+const struct RStr HCh[RStrNUM] = 
+{
+													 {"佑"},   //三角符号
+                           {"关","电压","温度","湿度"},  //工作方式
+                           {"TC-K","TC-J","TC-T","TC-R","TC-E","TC-B","TC-S","TC-N","TC-W"},//仅仅在温度是出现
+													 {"20mV","50mV","100mV","200mV","500mV","1V","2V","5V","10V","20V","50V","100V","1-5V"},//仅仅在电压是出现
+                           {"Off","2","5","10","20","40"},
+													 {"Off >","On  >"},
+													 {">"},
+													 {"显示"},  // 底框快捷键按钮数据
+													 {"数据处理"},// 底框快捷键按钮数据
+													 {"触发"},// 底框快捷键按钮数据
+													 {"接口"},// 底框快捷键按钮数据
+													 {"设置"},// 底框快捷键按钮数据
+													 {"2000$"},// 温度值域
+													 {"100%"},//湿度值域
+													 {"Off" },
+													 {"关" ,"开" },
+													 {"确定" ,"   取消" },
+													 {"     " },//数字  待填入
+													 
+};    //??
+const struct RStr HEn[RStrNUM]= 
+{
+													 {"佑"},//三角符号
+                           {"Off","DC","TEMP","RH"},
+                           {"TC-K","TC-J","TC-T","TC-R","TC-E","TC-B","TC-S","TC-N","TC-W"},//仅仅在温度是出现
+													 {"20mV","50mV","100mV","200mV","500mV","1V","2V","5V","10V","20V","50V","100V","1-5V"},//仅仅在电压是出现
+                           {"Off","2","5","10","20","40"},
+													 {"Off >","On  >"},
+													 {">"},
+													 {"AMP"},// 底框快捷键按钮数据
+													 {"DATA"},// 底框快捷键按钮数据
+													 {"TRIG"},// 底框快捷键按钮数据
+													 {"I/F"},// 底框快捷键按钮数据
+													 {"OTUR"},// 底框快捷键按钮数据
+													 {"2000$"},// 温度值域
+													 {"100%"},//湿度值域
+													 {"Off" },
+													 {"Off" ,"On" },
+													 {"OK" ,"Cancel" },
+													 {"     " },//数字
+};    //??
+void Stu_home_Init(void)
+{
+	uint8 m,n; 
+	 DataSave.Data_type.LANG = 1;  //语言选择
+
+	 DataSave.Data_type.TempAdjMeas.bit=4;           //整数位个数                      
+	 DataSave.Data_type.TempAdjMeas.Decimalbit=0;   //小数位个数
+	 DataSave.Data_type.TempAdjMeas.Symbol=0;     //符号 0 为正 1为负号
+	 DataSave.Data_type.TempAdjMeas.fval = 2000;   //  有符号浮点型 2000.0
+          DataSave.Data_type.TempAdjEu.bit=4;    
+          DataSave.Data_type.TempAdjEu.Decimalbit=0;
+          DataSave.Data_type.TempAdjEu.Symbol=0;
+          DataSave.Data_type.TempAdjEu.fval = 2000;
+
+
+
+          DataSave.Data_type.DCUpMeas.bit=1;                              
+	 DataSave.Data_type.DCUpMeas.Decimalbit=0;
+	 DataSave.Data_type.DCUpMeas.Symbol=0;
+	 DataSave.Data_type.DCUpMeas.fval = 1;
+          DataSave.Data_type.DCUpEu.bit=1; 
+          DataSave.Data_type.DCUpEu.Decimalbit=0;
+          DataSave.Data_type.DCUpEu.Symbol=0;
+          DataSave.Data_type.DCUpEu.fval = 1;
+		   DataSave.Data_type.DCLowMeas.bit=1;                              
+	 DataSave.Data_type.DCLowMeas.Decimalbit=0;
+	 DataSave.Data_type.DCLowMeas.Symbol=0;
+	 DataSave.Data_type.DCLowMeas.fval = 1;
+          DataSave.Data_type.DCLowEu.bit=1; 
+          DataSave.Data_type.DCLowEu.Decimalbit=0;
+          DataSave.Data_type.DCLowEu.Symbol=0;
+          DataSave.Data_type.DCLowEu.fval = 1;
+          DisInPut[1][0].Num = DataSave.Data_type.TempAdjMeas;//掉电保持数据赋值给显示数据
+          DisInPut[1][1].Num = DataSave.Data_type.TempAdjEu;
+          DisDC[1][0].Num = DataSave.Data_type.DCUpMeas;
+          DisDC[1][1].Num = DataSave.Data_type.DCUpEu;
+          DisDC[2][0].Num = DataSave.Data_type.DCLowMeas;
+          DisDC[2][1].Num = DataSave.Data_type.DCLowEu;
+        for(m=0;m<HCOL;m++)
+			for(n=0;n<HCAM;n++)
+	    {      			 
+			 DisLog[m][n].col = m;//行
+			 DisLog[m][n].cam = n;//列
+			 DisLog[m][n].lang = DataSave.Data_type.LANG;
+			 DisLog[m][n].flag = 1;  //初始化第一显示标志
+			 DisLog[m][n].selold = 1;//以前全选中现在全没选中 刷新
+			 DisLog[m][n].sel= 0;	  //当前没有选中
+			 DisLog[m][n].disp=1;  // 是否显示1 显示 0不显示
+			 DisLog[m][n].dispold=1; //之前是否显示
+			  DisLog[m][n].Box.flag = 0;  //字符串是否有框 0 没有框
+			  DisLog[m][n].FontCH.flag = 0;  //中文标志
+			 DisLog[m][n].FontEN.flag = 0;  //英文标志
+			
+			  if(m==0&&n==0)
+				{
+					DisLog[m][n].sel= 1;//当前为选中状态
+                                            DisLog[m][n].selold = 0;//上一次为选中状态
+					DisLog[m][n].cind=0;//类型
+				}
+				else if(m==1&&n==4)
+				{
+                                            DisLog[m][n].disp=0;
+					DisLog[m][n].dispold=0;
+					DisLog[m][n].cind=4;
+					DisLog[m][n].index[DisLog[m][n].cind] =0;
+				}
+				else if(m==0&&n>0)
+				{
+					DisLog[m][n].disp=0;
+					DisLog[m][n].dispold=0;
+				}
+				else if(m>0&&m<HCOL-1)
+					DisLog[m][n].cind=n+1;
+				else if(m==HCOL-1)
+				{
+					DisLog[m][n].cind=n+7;
+					if(n==0)
+					{
+						DisLog[m][n].sel= 1;
+						DisLog[m][n].selold = 0;
+					}
+						
+				}
+				if(DisLog[m][n].cind==1)
+				{
+					DisLog[m][n].Ceng=4;
+
+				}
+				else if(DisLog[m][n].cind==2)
+				{
+					DisLog[m][n].Ceng=9; //子下拉框有几个选项 9个
+
+				}
+				else if(DisLog[m][n].cind==3)
+				{
+					DisLog[m][n].Ceng=13;//子下拉框有几个选项 13个
+
+				}
+				else if(DisLog[m][n].cind==4)
+				{
+					DisLog[m][n].Ceng=6;
+
+				}
+			}
+		   
+
+   CurDisp.COL = 0;
+  CurDisp.CAM = 0;
+			
+         
+}
+//中框数据的初始化
+void Stu_Mid_Init(void)
+{
+	uint8 m,n; 
+
+   for(m=0;m<HCOL;m++)
+			for(n=0;n<HCAM;n++)
+	    {      			 
+		
+			 DisLog[m][n].lang = DataSave.Data_type.LANG;
+			 DisLog[m][n].flag = 1;
+			 DisLog[m][n].selold = 1;//以前全选中现在全没选中 刷新
+			 DisLog[m][n].sel= 0;	
+	
+
+			
+			  if(m==0&&n==0)
+				{
+
+                                            DisLog[m][n].selold = 0;
+
+				}
+			
+				
+			}
+		   
+       DisLog[CurDisp.COL][CurDisp.CAM].sel= 1;
+			 DisLog[CurDisp.COL][CurDisp.CAM].selold = 0;
+       DisLog[CurDisp.COL][CurDisp.CAM].flag = 0;
+	   DisLog[HCOL-1][0].sel= 1;
+	DisLog[HCOL-1][0].selold = 0;
+			
+         
+}
+//整个设置界面的初始化
+void Stu_home_cycle(struct CUR *sle,struct CUR *sleold)
+{
+	uint8 m,n;
+	
+        for(m=0;m<HCOL;m++)
+             for(n=0;n<HCAM;n++)
+	    {
+ 		DisLog[m][n].flag = 0;
+		DisLog[m][n].selold = 0;
+		DisLog[m][n].sel= 0;
+	
+	    }
+	if( sleold->CAM!= sle->CAM||sleold->COL!=sle->COL)	
+	{
+       DisLog[sle->COL][sle->CAM].selold = 0;//刷新
+	     DisLog[sle->COL][sle->CAM].sel= 1;
+       DisLog[sleold->COL][sleold->CAM].selold = 1;//刷新
+	     DisLog[sleold->COL][sleold->CAM].sel= 0;
+
+	}
+     
+}
+//初始化
+void page_home(void)
+{
+	  uint16 x=10;
+   	uint16 y=39;
+	  uint16 Xdiv=95;
+	  uint16 Ydiv=90;
+	  uint16 i;
+	  
+	  char str[5];
+	  
+	   LCD_SelectLayer(0);	
+	
+     LCD_Clear(LCD_COLOR_BLACK);
+     LCD_SetTextColor(LCD_COLOR_WHITE);	
+		 LCD_DrawRect(2, 38, 636, 20);
+	   LCD_DrawRect(0, 2, 639, 430);
+	   LCD_DrawHLine(0, 380, 639);
+	   
+	   if(CHI == DataSave.Data_type.LANG )
+	   {
+				
+				LCD_DisplayStringLineLJ(2,5, "显示逻辑/脉冲数据",FONTTYPE24);
+			  COMmenuInit(DataSave.Data_type.LANG,"显示","数据处理","触发","接口","设置");
+			  LCD_SetFont(&Font16);
+			  LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+				LCD_DisplayStringLineLJ(x+Xdiv,y, "输入",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*2,y, "传感器",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*3,y, "值域",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*4,y, "滤波器",FONTTYPE16);
+			  LCD_SetFont(&Font16);
+				LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+				LCD_DisplayStringLineLJ(x+Xdiv*6,y, "其它",FONTTYPE16);
+			  
+		 }
+		 else if(ENG == DataSave.Data_type.LANG)
+		 {
+			 LCD_DisplayStringLineLJ(3,5, "DisplayLogic/PulseData",FONTTYPE24);
+			 COMmenuInit(DataSave.Data_type.LANG,"AMP","DATA","TRIG","I/F","OTUR");
+			 LCD_SetFont(&Font16);
+			 LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv,y, "InPut");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*2,y, "Sensor");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*3,y, "Range");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*4,y, "Filter");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*6,y, "Misc.");
+		 }
+		 LCD_SetFont(&Font20);
+		  y = 60;
+			 Ydiv =28;
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y,"AL:M");
+			 
+
+			 for(i=1;i<10;i++)
+			 {
+			   sprintf(str,"%d :M",i); 
+
+				 LCD_SetFont(&Font20);
+
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+
+			 }
+			 LCD_SetFont(&Font20);
+			 sprintf(str,"%d:M",i); 
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+	     page_home_cycle();
+}
+
+
+void page_Mindle(void) //中框
+{
+	  uint16 x=10;
+   	uint16 y=39;
+	  uint16 Xdiv=95;
+	  uint16 Ydiv=90;
+	  uint16 i;
+ 	  uint8 lang;
+	  char str[5];
+	  
+ LCD_SetTextColor(LCD_COLOR_WHITE);	
+		 LCD_DrawRect(2, 38, 636, 20);  //画框
+	   LCD_DrawRect(0, 2, 639, 430);
+	   LCD_DrawHLine(0, 380, 639);
+	   lang = DataSave.Data_type.LANG; //中英文定义
+	   if(CHI == lang  )
+	   {
+				
+
+			  LCD_SetFont(&Font16);
+			  LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+				LCD_DisplayStringLineLJ(x+Xdiv,y, "输入",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*2,y, "传感器",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*3,y, "值域",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*4,y, "滤波器",FONTTYPE16);
+			  LCD_SetFont(&Font16);
+				LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+				LCD_DisplayStringLineLJ(x+Xdiv*6,y, "其它",FONTTYPE16);
+			  
+		 }
+		 else if(ENG == lang )
+		 {
+			
+			 LCD_SetFont(&Font16);
+			 LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv,y, "InPut");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*2,y, "Sensor");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*3,y, "Range");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*4,y, "Filter");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*6,y, "Misc.");
+		 }
+	  LCD_SetFont(&Font20);
+		  y = 60;
+			 Ydiv =28;
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y,"AL:M");
+			 
+
+			 for(i=1;i<10;i++)
+			 {
+			   sprintf(str,"%d :M",i); 
+
+				 LCD_SetFont(&Font20);
+
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+
+			 }
+			 LCD_SetFont(&Font20);
+			 sprintf(str,"%d:M",i); 
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+	     page_home_cycle();
+}
+
+void page_home_1(void)
+{
+
+	  uint16 x=10;
+   	uint16 y=39;
+	  uint16 Xdiv=90;
+	  uint16 Ydiv=90;
+	  uint16 i;
+	  
+	  char str[5];
+	  
+	   LCD_SelectLayer(0);	
+	
+     LCD_Clear(LCD_COLOR_BLACK);
+     LCD_SetTextColor(LCD_COLOR_WHITE);	
+		 LCD_DrawRect(2, 38, 636, 20);
+	   LCD_DrawRect(0, 2, 639, 430);
+	   LCD_DrawHLine(0, 380, 639);
+	
+	 
+	
+	
+	
+	   if(CHI == DataSave.Data_type.LANG )
+	   {
+				
+				LCD_DisplayStringLineLJ(2,5, "显示逻辑/脉冲数据",FONTTYPE24);
+			  COMmenuInit(DataSave.Data_type.LANG,"显示","数据处理","触发","接口","设置");
+			  LCD_SetFont(&Font16);
+			  LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+				LCD_DisplayStringLineLJ(x+Xdiv,y, "输入",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*2,y, "传感器",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*3,y, "值域",FONTTYPE16);
+				LCD_DisplayStringLineLJ(x+Xdiv*4,y, "滤波器",FONTTYPE16);
+			  LCD_SetFont(&Font16);
+				LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+				LCD_DisplayStringLineLJ(x+Xdiv*6,y, "其它",FONTTYPE16);
+			 LCD_SetFont(&Font20);
+			 y = 60;
+			 Ydiv =28;
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y,"ALL:M");
+			 
+
+			 for(i=1;i<10;i++)
+			 {
+			   sprintf(str,"%d  :M",i); 
+
+				 LCD_SetFont(&Font20);
+
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+
+			 }
+			 LCD_SetFont(&Font20);
+			 sprintf(str,"%d :M",i); 
+
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+			 LCD_DisplayStringLineLJ(x-5,y+Ydiv*i+50, "帮助",FONTTYPE16);
+			  LCD_SetTextColor(LCD_COLOR_HUI);
+			 for(i=0;i<11;i++)
+			 {
+				 
+
+				 Disp_Box(x-15+Xdiv,y+i*Ydiv+2,x-15+Xdiv+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*2,y+i*Ydiv+2,x-15+Xdiv*2+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*3+20,y+i*Ydiv+2,x-15+Xdiv*3+20+60,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*4+20,y+i*Ydiv+2,x-15+Xdiv*4+20+60,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*5+60,y+i*Ydiv+2,x-15+Xdiv*5+60+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*6+60,y+i*Ydiv+2,x-15+Xdiv*6+60+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				
+				 
+			 }
+			 LCD_SetTextColor (LCD_COLOR_WHITE);
+	
+			 LCD_SetBackColor(LCD_COLOR_HUI);
+			 y = 62;
+			 for(i=0;i<11;i++)
+			 {
+				 
+				 
+				
+				 LCD_DisplayStringLineLJ(x-5+Xdiv,y+i*Ydiv, "电压",FONTTYPE16);
+				 LCD_SetFont(&Font20);
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*3+20,y+i*Ydiv,(uint8_t* )"1 V");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*4+20,y+i*Ydiv,(uint8_t* )"Off");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*5+60,y+i*Ydiv,(uint8_t* )">");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*6+60,y+i*Ydiv,(uint8_t* )">");
+				 
+			 }
+			 LCD_SetBackColor(LCD_COLOR_BLACK);
+		 }
+		 else if(ENG == DataSave.Data_type.LANG)
+		 {
+			 LCD_SetFont(&Font16);
+			 LCD_DisplayStringLine_EN_CH_LJ(x,y, "CH:");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv,y, "InPut");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*2,y, "Sensor");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*3,y, "Range");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*4,y, "Filter");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*5,y, "EU");
+			 LCD_DisplayStringLine_EN_CH_LJ(x+Xdiv*6,y, "Misc.");
+
+			 
+			 LCD_SetFont(&Font20);
+			 y = 60;
+			 Ydiv =28;
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y,"ALL:M");
+			 
+
+			 for(i=1;i<10;i++)
+			 {
+			   sprintf(str,"%d  :M",i); 
+				 LCD_SetFont(&Font20);
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+			 }
+			 LCD_SetFont(&Font20);
+			 sprintf(str,"%d :M",i); 
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i,(uint8_t* )str);
+			
+       LCD_SetFont(&Font16); 
+			 LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*i+50, "Help?");	
+			 
+			 LCD_SetTextColor(LCD_COLOR_HUI);
+			 for(i=0;i<11;i++)
+			 {
+				 Disp_Box(x-15+Xdiv,y+i*Ydiv+2,x-15+Xdiv+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*2,y+i*Ydiv+2,x-15+Xdiv*2+100,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*3+10,y+i*Ydiv+2,x-15+Xdiv*3+20+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*4+30,y+i*Ydiv+2,x-15+Xdiv*4+20+70,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*5+60,y+i*Ydiv+2,x-15+Xdiv*5+60+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box(x-15+Xdiv*6+60,y+i*Ydiv+2,x-15+Xdiv*6+60+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				
+				 
+			 }
+			 LCD_SetTextColor (LCD_COLOR_WHITE);
+			 LCD_SetFont(&Font20);
+			 LCD_SetBackColor(LCD_COLOR_HUI);
+			 y = 62;
+			 for(i=0;i<11;i++)
+			 {
+				 
+				 
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv,y+i*Ydiv,(uint8_t* )"DC");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*2,y+i*Ydiv,(uint8_t* )"DC");
+	
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*3+20,y+i*Ydiv,(uint8_t* )"1 V");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*4+20,y+i*Ydiv,(uint8_t* )"Off");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*5+60,y+i*Ydiv,(uint8_t* )">");
+				 LCD_DisplayStringLine_EN_CH_LJ(x-5+Xdiv*6+60,y+i*Ydiv,(uint8_t* )">");
+				 
+			 }
+			 LCD_SetBackColor(LCD_COLOR_BLACK);
+			 
+			 LCD_DisplayStringLineLJ(3,5, "DisplayLogic/PulseData",FONTTYPE24);
+			 COMmenuInit(DataSave.Data_type.LANG,"AMP","DATA","TRIG","I/F","OTUR");
+		 }
+		 
+		 LCD_DisplayStringLineLJ(400,5, "佑",FONTTYPE24);
+		 
+		 
+}
+void Disp_Box_Home(struct RDispPara *sel,uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2,uint8_t bevel_edge,uint32_t Biancolor,uint32_t color)
+{	
+	char flag = sel->flag;
+	if(sel->Box.flag ==0)
+	{
+      sel->Box.x1=x1;
+	    sel->Box.y1=y1;
+	    sel->Box.x2=x2;
+	    sel->Box.y2=y2;
+             sel->Box.h=y2-y1;
+	    sel->Box.w=x2-x1;
+		sel->Box.flag = 1; 
+
+	}
+	if(sel->disp==1&&flag==1)
+	{
+		 Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+	}
+	else
+	{
+		if(sel->disp==1)
+		{
+			if(sel->sel!=sel->selold)
+			{ 
+				if(sel->sel==1)
+				{
+					Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_WHITE,LCD_COLOR_DARKGREEN);
+				}
+				else
+				{
+				  Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				
+				}
+				
+			}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+		}
+		else if(sel->disp==2&&sel->dispold==0)
+		{		
+			Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+			
+		}
+	}
+	
+}
+void Disp_Box_Zi(struct RDispPara *sel,uint16_t x1,uint16_t y1,uint16_t x2,uint16_t y2)
+{	
+	 //char flag = sel->flag;
+
+		if(sel->disp==1)
+		{
+			if(sel->sel!=sel->selold)
+			{ 
+				if(sel->sel==1)
+				{
+					Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_BLACK,LCD_COLOR_DARKGREEN);
+				}
+				else
+				{
+				  Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+				
+				}
+				
+			}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			Disp_Box(x1,y1,x2,y2,0,LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+		}
+	
+	
+}
+
+void LCD_DisplayStringLineLJ_Zi(struct RDispPara *sel,uint16_t x,uint16_t y,uint8_t FontType)
+{
+  uint32_t TextColor; 
+	uint32_t BackColor;
+	if(sel->FontCH.flag ==0)
+	{
+      sel->FontCH.x1=x;
+	    sel->FontCH.y1=y;
+	
+		sel->FontCH.flag = 1; 
+
+	}
+	if(sel->flag==1&&sel->disp==1)
+	{
+		 LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+	 	 sel->flag=0;
+	}
+	else
+	{
+		if(sel->disp==1)
+		{
+			if(sel->sel!=sel->selold)
+			{ 
+			 BackColor=LCD_GetBackColor();
+			if(sel->sel==1)
+			{
+					LCD_SetBackColor(LCD_COLOR_DARKGREEN);
+		                          LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			                 LCD_SetBackColor(BackColor);
+				}
+				else
+				{
+				         LCD_SetBackColor(LCD_COLOR_BLACK);
+					LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			                 LCD_SetBackColor(BackColor); 
+				
+				}
+				
+				sel->selold=sel->sel;	
+				
+			}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+			LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			LCD_SetColors(TextColor,BackColor);
+			
+		}
+	}
+
+	
+}
+void LCD_DisplayStringLine_EN_CH_LJ_Zi(struct RDispPara *sel,uint16_t x,uint16_t y)
+{
+	 uint32_t TextColor; 
+	uint32_t BackColor; 
+	if(sel->FontEN.flag ==0)
+	{
+             sel->FontEN.x1=x;
+	    sel->FontEN.y1=y;
+	
+		sel->FontEN.flag = 1; 
+
+	}
+	if(sel->flag==1&&sel->disp==1)
+	{
+		LCD_SetFont(&Font20);
+		LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+		sel->flag=0;
+  }	
+  else
+	{
+		if(sel->disp==1)
+		{ 
+		if(sel->sel!=sel->selold)
+			{ 
+				BackColor=LCD_GetBackColor();
+				LCD_SetFont(&Font20);
+				if(sel->sel==1)
+				{
+					LCD_SetBackColor(LCD_COLOR_DARKGREEN);
+		                         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			                LCD_SetBackColor(BackColor);
+				}
+				else
+				{
+				         LCD_SetBackColor(LCD_COLOR_BLACK);
+					LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			                 LCD_SetBackColor(BackColor); 
+				
+				}
+					sel->selold=sel->sel;
+				 		}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			LCD_SetFont(&Font20);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			LCD_SetColors(TextColor,BackColor);
+		}
+		
+	}	
+	
+}
+
+
+//中文
+void LCD_DisplayStringLineLJ_Home(struct RDispPara *sel,uint16_t x,uint16_t y,uint8_t FontType)
+{
+  uint32_t TextColor; 
+	uint32_t BackColor;
+	if(sel->FontCH.flag ==0)
+	{
+      sel->FontCH.x1=x;
+	    sel->FontCH.y1=y;
+	
+		sel->FontCH.flag = 1; 
+
+	}
+	 BackColor=LCD_GetBackColor();
+	if(sel->flag==1&&sel->disp==1)
+	{
+		LCD_SetBackColor(LCD_COLOR_HUI); 
+		LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+		LCD_SetBackColor(BackColor);
+	 	 sel->flag=0;
+	}
+	else
+	{
+		if(sel->disp==1)
+		{
+			if(sel->sel!=sel->selold)
+			{ 
+			
+			if(sel->sel==1)
+			{
+					LCD_SetBackColor(LCD_COLOR_DARKGREEN);
+		                          LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			                 LCD_SetBackColor(BackColor);
+				}
+				else
+				{
+				         LCD_SetBackColor(LCD_COLOR_HUI);
+					LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			                 LCD_SetBackColor(BackColor); 
+				
+				}
+				
+				sel->selold=sel->sel;	
+				
+			}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+			LCD_DisplayStringLineLJ(x,y,(uint8_t *)HCh[sel->cind].Ch[sel->index[sel->cind]],FontType);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=0;
+			
+		}
+		else if(sel->disp==2&&sel->dispold==0)
+		{		
+			LCD_SetFont(&Font20);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_WHITE,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=1;
+			
+		}
+	}
+
+	
+}
+
+void LCD_DisplayNumLine_EN_CH_LJ_Home(struct RDispPara *sel,uint16_t x,uint16_t y,char* ptr,sFONT FontType)
+{
+	 uint32_t TextColor; 
+	uint32_t BackColor; 
+	if(sel->FontEN.flag ==0)
+	{
+             sel->FontEN.x1=x;
+	    sel->FontEN.y1=y;
+	
+		sel->FontEN.flag = 1; 
+
+	}
+	BackColor=LCD_GetBackColor();
+	if(sel->flag==1&&sel->disp==1)
+	{
+		LCD_SetFont(&FontType);
+		 LCD_SetBackColor(LCD_COLOR_HUI);
+		 
+		LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )ptr);
+		LCD_SetBackColor(BackColor); 
+		sel->flag=0;
+  }	
+  else
+	{
+		if(sel->disp==1)
+		{ 
+		if(sel->sel!=sel->selold)
+			{ 
+				
+				LCD_SetFont(&FontType);
+				if(sel->sel==1)
+				{
+					LCD_SetBackColor(LCD_COLOR_DARKGREEN);
+		                         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )ptr);
+			                LCD_SetBackColor(BackColor);
+				}
+				else
+				{
+				         LCD_SetBackColor(LCD_COLOR_HUI);
+					LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )ptr);
+			                 LCD_SetBackColor(BackColor); 
+				
+				}
+					sel->selold=sel->sel;
+				 		}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			LCD_SetFont(&FontType);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )ptr);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=0;
+		}
+		else if(sel->disp==2&&sel->dispold==0)
+		{		
+			LCD_SetFont(&FontType);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_WHITE,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )ptr);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=1;
+			sel->Num.fvalold = sel->Num.fval;
+			
+		}
+	}	
+	
+}
+
+
+
+
+
+void LCD_DisplayStringLine_EN_CH_LJ_Home(struct RDispPara *sel,uint16_t x,uint16_t y)
+{
+	 uint32_t TextColor; 
+	uint32_t BackColor; 
+	if(sel->FontEN.flag ==0)
+	{
+             sel->FontEN.x1=x;
+	    sel->FontEN.y1=y;
+	
+		sel->FontEN.flag = 1; 
+
+	}
+	BackColor=LCD_GetBackColor();
+	if(sel->flag==1&&sel->disp==1)
+	{
+		LCD_SetFont(&Font20);
+		 LCD_SetBackColor(LCD_COLOR_HUI);
+		LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+		LCD_SetBackColor(BackColor); 
+		sel->flag=0;
+  }	
+  else
+	{
+		if(sel->disp==1)
+		{ 
+		if(sel->sel!=sel->selold)
+			{ 
+				
+				LCD_SetFont(&Font20);
+				if(sel->sel==1)
+				{
+					LCD_SetBackColor(LCD_COLOR_DARKGREEN);
+		                         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			                LCD_SetBackColor(BackColor);
+				}
+				else
+				{
+				         LCD_SetBackColor(LCD_COLOR_HUI);
+					LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			                 LCD_SetBackColor(BackColor); 
+				
+				}
+					sel->selold=sel->sel;
+				 		}
+		}
+		else if(sel->disp==0&&sel->dispold==1)
+		{		
+			LCD_SetFont(&Font20);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_BLACK,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=0;
+		}
+		else if(sel->disp==2&&sel->dispold==0)
+		{		
+			LCD_SetFont(&Font20);
+    	                 TextColor=LCD_GetTextColor();
+			BackColor=LCD_GetBackColor();
+			LCD_SetColors(LCD_COLOR_WHITE,LCD_COLOR_BLACK);
+		         LCD_DisplayStringLine_EN_CH_LJ(x,y,(uint8_t* )HEn[sel->cind].Ch[sel->index[sel->cind]]);
+			LCD_SetColors(TextColor,BackColor);
+			sel->dispold=1;
+			
+		}
+	}	
+	
+}
+void page_home_cycle(void)
+{
+
+	  uint16 x=10;
+   	uint16 y=39;
+	  uint16 Xdiv=90;
+	  uint16 Ydiv=90;
+	  uint16 i;
+
+	//  char str[5];
+	   LCD_DisplayStringLineLJ_Home(&DisLog[0][0],400,5,FONTTYPE24);
+	  
+		 COMmenu(&DisLog[12][0],&DisLog[12][1],&DisLog[12][2],&DisLog[12][3],&DisLog[12][4]);
+	   y = 60;
+		 Ydiv =28;
+	   if(CHI == DataSave.Data_type.LANG )
+	   {
+	      LCD_DisplayStringLineLJ(x-5,y+Ydiv*11+20, "帮助",FONTTYPE16);
+		 }
+	   else
+		 {
+		    LCD_SetFont(&Font16); 
+			  LCD_DisplayStringLine_EN_CH_LJ(x-5,y+Ydiv*11+20, "Help?");
+			  
+		 }
+	
+	   LCD_DisplayStringLineLJ_Home(&DisLog[0][0],400,5,FONTTYPE24);
+		 for(i=0;i<11;i++)
+		 {
+				 Disp_Box_Home(&DisLog[i+1][0],x-15+Xdiv,y+i*Ydiv+2,x-15+Xdiv+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+			          Disp_Box_Home(&DisLog[i+1][1],x-15+Xdiv*2,y+i*Ydiv+2,x-15+Xdiv*2+80,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box_Home(&DisLog[i+1][2],x-15+Xdiv*3+10,y+i*Ydiv+2,x-15+Xdiv*3+80+20,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box_Home(&DisLog[i+1][3],x-15+Xdiv*4+30,y+i*Ydiv+2,x-15+Xdiv*4+70+20,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box_Home(&DisLog[i+1][4],x-15+Xdiv*5+20,y+i*Ydiv+2,x-15+Xdiv*5+70+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+				 Disp_Box_Home(&DisLog[i+1][5],x-15+Xdiv*6+60,y+i*Ydiv+2,x-15+Xdiv*6+60+30,y+i*Ydiv+24,0,LCD_COLOR_HUI,LCD_COLOR_HUI);
+						
+
+		 }
+		 y = 64;
+		 LCD_SetColors(LCD_COLOR_WHITE,LCD_COLOR_HUI);
+		 for(i=0;i<11;i++)
+		 {
+			   if(CHI == DataSave.Data_type.LANG )
+						LCD_DisplayStringLineLJ_Home(&DisLog[i+1][0],x-5+Xdiv,y+i*Ydiv,FONTTYPE16);
+				 else
+						LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][0],x-5+Xdiv,y+i*Ydiv);
+				 LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv);
+				 LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][2],x-5+Xdiv*3+20,y+i*Ydiv);
+				 LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][3],x-5+Xdiv*4+30,y+i*Ydiv);
+				
+				 
+				 LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][4],x-5+Xdiv*5+20,y+i*Ydiv);
+				 LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][5],x-5+Xdiv*6+60,y+i*Ydiv);
+				 
+		 }
+		 LCD_SetBackColor(LCD_COLOR_BLACK);
+	  
+		 
+		 
+		 
+		 
+		 
+}
+
+
+

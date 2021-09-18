@@ -1,0 +1,32 @@
+#include "include.h"
+ OS_TCB       AppTaskLightTCB;
+ CPU_STK      AppTaskLightStk[APP_TASK_Light_STK_SIZE];
+
+//设置亮度 任务10ms刷新一次
+void AppTaskLight(void *p_arg)
+{
+    OS_ERR  err;
+    while(1)
+    {
+        if(DataSave.Data_type.Bright==1)
+        	{
+		BL_PIN(1);//高电平是亮
+        		OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );  //延时
+        		BL_PIN(0);//高电平是灭
+        		OSTimeDly ( 5, OS_OPT_TIME_DLY, & err );  //延时
+    	}
+		else if(DataSave.Data_type.Bright==2)
+		{
+			        BL_PIN(1);//高电平是亮
+					OSTimeDly ( 1, OS_OPT_TIME_DLY, & err );  //延时
+					BL_PIN(0);//高电平是灭
+					OSTimeDly ( 9, OS_OPT_TIME_DLY, & err );  //延时
+			}
+		else
+		{
+					 BL_PIN(1);//高电平是亮
+					OSTimeDly ( 10, OS_OPT_TIME_DLY, & err );  //延时
+		}
+		
+    }
+}
