@@ -604,7 +604,10 @@ uint8 SerialRemoteHandle(uint8 len,uint8 *buf,struct ChanalData *pCmd,struct Cha
             {
                 memcpy(pCmd->hmd[i].byte,&buf[currCharNum],sizeof(pCmd->hmd[i].byte));
                 pCmd->hmd[i].fStr.fval = BYTE3toFloat(&buf[currCharNum]);
-		        pCmd->hmd[i].fStr.fval = DoSW(pCmd->hmd[i].fStr.fval,i);
+				if(i == 1 || i == 3 || i == 5)
+				{
+					pCmd->hmd[i].fStr.fval = DoSWHmd(pCmd->hmd[i].fStr.fval,i);
+				}
                 pCmd->hmd[i].fStr.fval = DoFiler(pCmd->hmd[i].fStr.fval, FilterVal[FilerIndex[i]],i);
                 SwitchChanalData (&pCmd->hmd[i].fStr,4);//小数点后8位调试
                 fStr2DfStr(&pCmd->hmd[i]);//接收后解析的数据原始数据转换为数据显示
@@ -664,6 +667,28 @@ uint32 JiSuanXYsamp(struct SLData *p,uint8 i,uint32 starttick,uint32 NumMs,uint3
     return endtick;
 }
 
+uint32 JiSuanXYsamp2(struct SLData *p,uint8 i,uint32 starttick,uint32 NumMs,uint32 ZoneD,uint8 * pr1,uint16 XLen)
+{
+    uint32 endtick=0;
+    endtick = HAL_GetTick();
+    if(DataSave.Data_type.DisLog[i+2][0].index[1]  != OFF)  //前两行是箭头和ALL
+    {
+        p->Dxy.X=GIXStartX+(endtick-starttick)/NumMs;
+		if((p->Dxy.X>GIXStartX+PointsPix)&&XLen>=400)
+		{
+			p->Dxy.X=GIXStartX+PointsPix;
+			endtick=((p->Dxy.X-GIXStartX)*NumMs)+starttick;
+			*pr1 = 1;
+		}
+		else
+		{
+			p->Dxy.X=GIXStartX+XLen;//强行校正
+			endtick=((p->Dxy.X-GIXStartX)*NumMs)+starttick;
+		}
+        p->Dxy.Y=GIXStartY-((i-11)%ZoneD)*(PointsPiy/ ZoneD)-((p->fStr.fval-DDa[i][0].Low[DDa[i][0].vcind].fval)*(PointsPix/ ZoneD)/(DDa[i][0].Up[DDa[i][0].vcind].fval-DDa[i][0].Low[DDa[i][0].vcind].fval));
+    }
+    return endtick;
+}
 
 //发送复位指令
 void SendReSet(void)
@@ -720,7 +745,7 @@ void SendSetMod(const struct ChanalSet D)
 
 //发送三湿度通道模式指令
 
-void SendSetHMod(const struct ChanalSet D)
+void SendSetHMod(const struct ChanalHSet D)
 {
     uint8 buf[15];
     uint8 i=0;

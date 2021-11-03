@@ -241,7 +241,7 @@ struct SLData
     Point Dxy;
 };
 
-#define     SDLEN 178
+#define     SDLEN 262
 #pragma pack (1)
 union DataSD_union
 {
@@ -270,6 +270,7 @@ union SD_U
         uint32 starttick;
         union DataSD_union FD[2];     //两个频率
         union DataSD_union CHD[10];  //10个通道 不预留
+		union DataSD_union HMD[6];  //3个湿度通道 不预留
 
     } Data;
     unsigned char uD[SDLEN]; //字节
@@ -281,7 +282,7 @@ struct ChanalData
     struct SLData frq[2];
     struct SLData chd[CHANNUM];
 	struct SLData hmd[6];
-    uint8  chalarm[CHANNUM];   //每个通道的报警类型 0 关1上超 2 下超 3 超出
+    uint8  chalarm[CHANNUM+3];   //每个通道的报警类型 0 关1上超 2 下超 3 超出
 };
 
 typedef struct

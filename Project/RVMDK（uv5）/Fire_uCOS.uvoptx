@@ -120,6 +120,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>DLGUARM</Key>
+          <Name>猬#w????趏鰃</Name>
         </SetRegEntry>
         <SetRegEntry>
           <Number>0</Number>
@@ -1109,7 +1110,7 @@
         <Ww>
           <count>184</count>
           <WinNumber>2</WinNumber>
-          <ItemText>\\__COS_III\../../User/BSP/usart/bsp_rs232_usart.c\chrStr</ItemText>
+          <ItemText>\\__COS_III\../../User/BSP/usart/bsp_rs232_usart.c\chrStr,0x10</ItemText>
         </Ww>
         <Ww>
           <count>185</count>
@@ -1201,6 +1202,106 @@
           <WinNumber>2</WinNumber>
           <ItemText>DDaP</ItemText>
         </Ww>
+        <Ww>
+          <count>203</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DisLogOld</ItemText>
+        </Ww>
+        <Ww>
+          <count>204</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DisInPut</ItemText>
+        </Ww>
+        <Ww>
+          <count>205</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>ChanSet</ItemText>
+        </Ww>
+        <Ww>
+          <count>206</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>ChanHSet</ItemText>
+        </Ww>
+        <Ww>
+          <count>207</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>pCmd-&gt;hmd</ItemText>
+        </Ww>
+        <Ww>
+          <count>208</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DisLog</ItemText>
+        </Ww>
+        <Ww>
+          <count>209</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>ChanDataF</ItemText>
+        </Ww>
+        <Ww>
+          <count>210</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DDaF</ItemText>
+        </Ww>
+        <Ww>
+          <count>211</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>ChanDataF</ItemText>
+        </Ww>
+        <Ww>
+          <count>212</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>Dsd</ItemText>
+        </Ww>
+        <Ww>
+          <count>213</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DataSave</ItemText>
+        </Ww>
+        <Ww>
+          <count>214</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>buf</ItemText>
+        </Ww>
+        <Ww>
+          <count>215</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DHmdF</ItemText>
+        </Ww>
+        <Ww>
+          <count>216</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DataSave.Data_type.DisLog</ItemText>
+        </Ww>
+        <Ww>
+          <count>217</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>Lines</ItemText>
+        </Ww>
+        <Ww>
+          <count>218</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DDa,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>219</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>Lines2,0x0A</ItemText>
+        </Ww>
+        <Ww>
+          <count>220</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>i</ItemText>
+        </Ww>
+        <Ww>
+          <count>221</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DataSave.Data_type.DisLog</ItemText>
+        </Ww>
+        <Ww>
+          <count>222</count>
+          <WinNumber>2</WinNumber>
+          <ItemText>DisSoftKey</ItemText>
+        </Ww>
       </WatchWindow2>
       <Tracepoint>
         <THDelay>0</THDelay>
@@ -1226,7 +1327,7 @@
         <aPa1>0</aPa1>
         <AscS4>0</AscS4>
         <aSer4>0</aSer4>
-        <StkLoc>0</StkLoc>
+        <StkLoc>1</StkLoc>
         <TrcWin>0</TrcWin>
         <newCpu>0</newCpu>
         <uProt>0</uProt>
@@ -1283,7 +1384,7 @@
 
   <Group>
     <GroupName>STM32F7xx_HAL_Driver</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

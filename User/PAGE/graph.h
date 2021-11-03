@@ -92,6 +92,7 @@ extern uint16 LinenumFM;
 extern RTC_TimeTypeDef RTC_TimeStrStart;
 extern RTC_DateTypeDef RTC_DateStrStart;
 extern Point Lines[DCOL-1][PointsNum];
+extern Point Lines2[2][PointsNum];//通道11-12曲线的矩阵
 extern const char Sampletime[SampleMaxCam][7];
 extern const uint32 SampletimeMs[SampleMaxCam];
 extern const char  ZoneC[ZoneMaxCam][8];

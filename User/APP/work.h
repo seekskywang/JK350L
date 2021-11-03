@@ -128,6 +128,7 @@ void VRDiaInit(uint8 keytmp,struct RDispPara* RD,struct CUR* cur);
 void VROnOff(uint8 keytmp,struct RDispPara* RD,struct CUR* cur);
 void ModifyVR(uint8 keytmp,struct RDispPara* RD,struct RDispPara* RDOld,struct CUR* cur,char MaxCol,char MaxCam);
 void VRVGDISensorManu(uint8 keytmp,struct RDispPara* RD,struct CUR* cur);
+void H3SensorManu(uint8 keytmp,struct RDispPara* RD,struct CUR* cur);
 extern uint8 HidFlag;
 extern OS_SEM  Page_SEM;   
 extern struct RDispPara DisInPut[DiaTEMPCOL][DiaTEMPCAM];

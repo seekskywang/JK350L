@@ -35,7 +35,8 @@ const char  ZoneC[ZoneMaxCam][8] =
 {"1zone \0","2zone \0","5zone \0","10zone\0"};
 const uint32 ZoneData[ZoneMaxCam] =
 {1,2,5,10};
-Point Lines[DCOL-1][PointsNum] = {0};//通道曲线的矩阵
+Point Lines[DCOL-1][PointsNum] = {0};//通道1-10曲线的矩阵
+Point Lines2[2][PointsNum] = {0};//通道11-12曲线的矩阵
 uint16 Linenum=0;
 
 uint16 LinenumFM=0;
@@ -496,9 +497,10 @@ uint8 DrawGraph(const struct CUR CURV,uint16_t PointCount)
             break;
         }
     }
-	if(CURV.PAGE == 0)
+	
+	for(i=0; i<12; i++)
 	{
-		for(i=0; i<DCOL-1; i++)
+		if(i < 10)
 		{
 			if(DDa[i][0].DP.Dxy.Y>GIXStartY)
 				DDa[i][0].DP.Dxy.Y=GIXStartY;
@@ -511,7 +513,24 @@ uint8 DrawGraph(const struct CUR CURV,uint16_t PointCount)
 				DDa[i][0].DP.Dxy.Y=GIXStartY-PointsPiy;
 			else if(DDa[i][0].DP.Dxy.Y>GIXStartY)
 				DDa[i][0].DP.Dxy.Y=GIXStartY;
-			if(PointCount>0&&PointCount<PointsNum)
+		}else{
+			if(DDa[i+1][0].DP.Dxy.Y>GIXStartY)
+				DDa[i+1][0].DP.Dxy.Y=GIXStartY;
+			if(DDa[i+1][0].DP.Dxy.X<GIXStartX)
+				DDa[i+1][0].DP.Dxy.X=GIXStartX-1;
+			else if(DDa[i][0].DP.Dxy.X>GIXStartX+PointsPix)
+				DDa[i+1][0].DP.Dxy.X=GIXStartX+PointsPix+1;
+
+			if(DDa[i+1][0].DP.Dxy.Y<GIXStartY-PointsPiy)
+				DDa[i+1][0].DP.Dxy.Y=GIXStartY-PointsPiy;
+			else if(DDa[i+1][0].DP.Dxy.Y>GIXStartY)
+				DDa[i+1][0].DP.Dxy.Y=GIXStartY;
+		}
+		
+		
+		if(PointCount>0&&PointCount<PointsNum)
+		{
+			if(i < 10)
 			{
 				if(DDa[i][0].DP.dispold==1)
 					continue;
@@ -526,134 +545,287 @@ uint8 DrawGraph(const struct CUR CURV,uint16_t PointCount)
 				{
 					continue;
 				}
-				if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
-				{
-					LCD_DrawPolygonLJ2(Lines[i],PointCount,colors[i]);
-				}
-				if(PointCount==1||Rightframe==1)
-				{
-
-					if(i<DCOL-2)
-						sprintf(str," %d  ",i+1);
-					else
-						sprintf(str," %d ",i+1);
-					TextColor=LCD_GetTextColor();
-					BackColor=LCD_GetBackColor();
-					if(CURV.COL-1>10)  //越出
-					{
-					}
-					else
-					{
-						col = CURV.COL-1;
-					}
-					if(i== col )
-						LCD_SetColors(colors[i],LCD_COLOR_WHITE);
-					else
-						LCD_SetColors(LCD_COLOR_WHITE,colors[i]);
-					if(flag==0)
-					{
-						if(DataSave.Data_type.PageFlag == FPageGraph)
-						{
-							LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
-						}
-						flag = 1;
-					}
-					if(DataSave.Data_type.PageFlag == FPageGraph)
-					{
-						LCD_DrawHLineLJ(8+30, Lines[i][0].Y, 12,colors[i]);
-						//保证指示箭头不超出
-						if((Lines[i][0].Y+8)>GIXStartY)
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-15, (uint8_t* )str,&Font16);
-						else if((Lines[i][0].Y-8)<GIXEndY)
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y, (uint8_t* )str,&Font16);
-						else
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-8, (uint8_t* )str,&Font16);
-					}
-					LCD_SetColors(TextColor,BackColor);
-					if(i== lastnum)
-						Rightframe = 0;  //画完把标志清0
-				}
-			}
-		}
-	}else if(CURV.PAGE == 1){
-		for(i=0; i<2; i++)
-		{
-			if(DDa[i+11][0].DP.Dxy.Y>GIXStartY)
-				DDa[i+11][0].DP.Dxy.Y=GIXStartY;
-			if(DDa[i+11][0].DP.Dxy.X<GIXStartX)
-				DDa[i+11][0].DP.Dxy.X=GIXStartX-1;
-			else if(DDa[i+11][0].DP.Dxy.X>GIXStartX+PointsPix)
-				DDa[i+11][0].DP.Dxy.X=GIXStartX+PointsPix+1;
-
-			if(DDa[i+11][0].DP.Dxy.Y<GIXStartY-PointsPiy)
-				DDa[i+11][0].DP.Dxy.Y=GIXStartY-PointsPiy;
-			else if(DDa[i+11][0].DP.Dxy.Y>GIXStartY)
-				DDa[i+11][0].DP.Dxy.Y=GIXStartY;
-			if(PointCount>0&&PointCount<PointsNum)
-			{
-				if(DDa[i+11][0].DP.dispold==1)
+			}else{
+				if(DDa[i+1][0].DP.dispold==1)
 					continue;
-				Lines[i][PointCount-1] =DDa[i+11][0].DP.Dxy;
-				if(DDa[i+11][0].DP.Dxy.X>GIXStartX+PointsPix)    //超出图框
+				Lines2[i-10][PointCount-1] =DDa[i+1][0].DP.Dxy;
+				if(DDa[i+1][0].DP.Dxy.X>GIXStartX+PointsPix)    //超出图框
 				{
 					//DDa[i][0].DP.Dxy.X = GIXStartX+400; //会产生误差
 					r =1;
 					continue;
 				}
-				if(DataSave.Data_type.DisLog[i+2+10][0].index[1] == OFF) //off状态下跳出
+				if(DataSave.Data_type.DisLog[i+1][0].index[1] == OFF) //off状态下跳出
 				{
 					continue;
 				}
-				if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
+			}
+			if(CURV.PAGE == 0)
+			{
+				if(i<10)
 				{
-					LCD_DrawPolygonLJ2(Lines[i],PointCount,colors[i]);
-				}
-				if(PointCount==1||Rightframe==1)
-				{
+					if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
+					{
+						LCD_DrawPolygonLJ2(Lines[i],PointCount,colors[i]);
+					}
+					if(PointCount==1||Rightframe==1)
+					{
 
-					if(i<1)
-						sprintf(str," %d ",i+1+10);
-					else
-						sprintf(str," %d ",i+1+10);
-					TextColor=LCD_GetTextColor();
-					BackColor=LCD_GetBackColor();
-					if(CURV.COL-1>10)  //越出
-					{
-					}
-					else
-					{
-						col = CURV.COL-1;
-					}
-					if(i== col )
-						LCD_SetColors(colors[i],LCD_COLOR_WHITE);
-					else
-						LCD_SetColors(LCD_COLOR_WHITE,colors[i]);
-					if(flag==0)
-					{
+						if(i<DCOL-2)
+							sprintf(str," %d  ",i+1);
+						else
+							sprintf(str," %d ",i+1);
+						TextColor=LCD_GetTextColor();
+						BackColor=LCD_GetBackColor();
+						if(CURV.COL-1>10)  //越出
+						{
+						}
+						else
+						{
+							col = CURV.COL-1;
+						}
+						if(i== col )
+							LCD_SetColors(colors[i],LCD_COLOR_WHITE);
+						else
+							LCD_SetColors(LCD_COLOR_WHITE,colors[i]);
+						if(flag==0)
+						{
+							if(DataSave.Data_type.PageFlag == FPageGraph)
+							{
+								LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
+							}
+							flag = 1;
+						}
 						if(DataSave.Data_type.PageFlag == FPageGraph)
 						{
-							LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
+							LCD_DrawHLineLJ(8+30, Lines[i][0].Y, 12,colors[i]);
+							//保证指示箭头不超出
+							if((Lines[i][0].Y+8)>GIXStartY)
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-15, (uint8_t* )str,&Font16);
+							else if((Lines[i][0].Y-8)<GIXEndY)
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y, (uint8_t* )str,&Font16);
+							else
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-8, (uint8_t* )str,&Font16);
 						}
-						flag = 1;
+						LCD_SetColors(TextColor,BackColor);
+						if(i== lastnum)
+							Rightframe = 0;  //画完把标志清0
 					}
-					if(DataSave.Data_type.PageFlag == FPageGraph)
+				}
+			}else if(CURV.PAGE == 1){
+				if(i > 9)
+				{
+					if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
 					{
-						LCD_DrawHLineLJ(8+30, Lines[i][0].Y, 12,colors[i]);
-						//保证指示箭头不超出
-						if((Lines[i][0].Y+8)>GIXStartY)
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-15, (uint8_t* )str,&Font16);
-						else if((Lines[i][0].Y-8)<GIXEndY)
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y, (uint8_t* )str,&Font16);
-						else
-							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-8, (uint8_t* )str,&Font16);
+						LCD_DrawPolygonLJ2(Lines2[i-10],PointCount,colors[i-10]);
 					}
-					LCD_SetColors(TextColor,BackColor);
-					if(i== lastnum)
-						Rightframe = 0;  //画完把标志清0
+					if(PointCount==1||Rightframe==1)
+					{
+
+	//					if(i<12)
+	//						sprintf(str," %d ",i+1);
+	//					else
+						sprintf(str," %d ",i+1);
+						TextColor=LCD_GetTextColor();
+						BackColor=LCD_GetBackColor();
+						if(CURV.COL-1>10)  //越出
+						{
+						}
+						else
+						{
+							col = CURV.COL-1;
+						}
+						if(i== col )
+							LCD_SetColors(colors[i-10],LCD_COLOR_WHITE);
+						else
+							LCD_SetColors(LCD_COLOR_WHITE,colors[i-10]);
+						if(flag==0)
+						{
+							if(DataSave.Data_type.PageFlag == FPageGraph)
+							{
+								LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
+							}
+							flag = 1;
+						}
+						if(DataSave.Data_type.PageFlag == FPageGraph)
+						{
+							LCD_DrawHLineLJ(8+30, Lines2[i-10][0].Y, 12,colors[i-10]);
+							//保证指示箭头不超出
+							if((Lines2[i-10][0].Y+8)>GIXStartY)
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i-10][0].Y-15, (uint8_t* )str,&Font16);
+							else if((Lines[i][0].Y-8)<GIXEndY)
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i-10][0].Y, (uint8_t* )str,&Font16);
+							else
+								LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i-10][0].Y-8, (uint8_t* )str,&Font16);
+						}
+						LCD_SetColors(TextColor,BackColor);
+						if(i== 11)
+							Rightframe = 0;  //画完把标志清0
+					}
 				}
 			}
 		}
 	}
+		
+		
+//	if(CURV.PAGE == 0)
+//	{
+//		for(i=0; i<DCOL-1; i++)
+//		{
+//			if(DDa[i][0].DP.Dxy.Y>GIXStartY)
+//				DDa[i][0].DP.Dxy.Y=GIXStartY;
+//			if(DDa[i][0].DP.Dxy.X<GIXStartX)
+//				DDa[i][0].DP.Dxy.X=GIXStartX-1;
+//			else if(DDa[i][0].DP.Dxy.X>GIXStartX+PointsPix)
+//				DDa[i][0].DP.Dxy.X=GIXStartX+PointsPix+1;
+
+//			if(DDa[i][0].DP.Dxy.Y<GIXStartY-PointsPiy)
+//				DDa[i][0].DP.Dxy.Y=GIXStartY-PointsPiy;
+//			else if(DDa[i][0].DP.Dxy.Y>GIXStartY)
+//				DDa[i][0].DP.Dxy.Y=GIXStartY;
+//			if(PointCount>0&&PointCount<PointsNum)
+//			{
+//				if(DDa[i][0].DP.dispold==1)
+//					continue;
+//				Lines[i][PointCount-1] =DDa[i][0].DP.Dxy;
+//				if(DDa[i][0].DP.Dxy.X>GIXStartX+PointsPix)    //超出图框
+//				{
+//					//DDa[i][0].DP.Dxy.X = GIXStartX+400; //会产生误差
+//					r =1;
+//					continue;
+//				}
+//				if(DataSave.Data_type.DisLog[i+2][0].index[1] == OFF) //off状态下跳出
+//				{
+//					continue;
+//				}
+//				if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
+//				{
+//					LCD_DrawPolygonLJ2(Lines[i],PointCount,colors[i]);
+//				}
+//				if(PointCount==1||Rightframe==1)
+//				{
+// 
+//					if(i<DCOL-2)
+//						sprintf(str," %d  ",i+1);
+//					else
+//						sprintf(str," %d ",i+1);
+//					TextColor=LCD_GetTextColor();
+//					BackColor=LCD_GetBackColor();
+//					if(CURV.COL-1>10)  //越出
+//					{
+//					}
+//					else
+//					{
+//						col = CURV.COL-1;
+//					}
+//					if(i== col )
+//						LCD_SetColors(colors[i],LCD_COLOR_WHITE);
+//					else
+//						LCD_SetColors(LCD_COLOR_WHITE,colors[i]);
+//					if(flag==0)
+//					{
+//						if(DataSave.Data_type.PageFlag == FPageGraph)
+//						{
+//							LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
+//						}
+//						flag = 1;
+//					}
+//					if(DataSave.Data_type.PageFlag == FPageGraph)
+//					{
+//						LCD_DrawHLineLJ(8+30, Lines[i][0].Y, 12,colors[i]);
+//						//保证指示箭头不超出
+//						if((Lines[i][0].Y+8)>GIXStartY)
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-15, (uint8_t* )str,&Font16);
+//						else if((Lines[i][0].Y-8)<GIXEndY)
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y, (uint8_t* )str,&Font16);
+//						else
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines[i][0].Y-8, (uint8_t* )str,&Font16);
+//					}
+//					LCD_SetColors(TextColor,BackColor);
+//					if(i== lastnum)
+//						Rightframe = 0;  //画完把标志清0
+//				}
+//			}
+//		}
+//	}else if(CURV.PAGE == 1){
+//		for(i=0; i<2; i++)
+//		{
+//			if(DDa[i+11][0].DP.Dxy.Y>GIXStartY)
+//				DDa[i+11][0].DP.Dxy.Y=GIXStartY;
+//			if(DDa[i+11][0].DP.Dxy.X<GIXStartX)
+//				DDa[i+11][0].DP.Dxy.X=GIXStartX-1;
+//			else if(DDa[i+11][0].DP.Dxy.X>GIXStartX+PointsPix)
+//				DDa[i+11][0].DP.Dxy.X=GIXStartX+PointsPix+1;
+
+//			if(DDa[i+11][0].DP.Dxy.Y<GIXStartY-PointsPiy)
+//				DDa[i+11][0].DP.Dxy.Y=GIXStartY-PointsPiy;
+//			else if(DDa[i+11][0].DP.Dxy.Y>GIXStartY)
+//				DDa[i+11][0].DP.Dxy.Y=GIXStartY;
+//			if(PointCount>0&&PointCount<PointsNum)
+//			{
+//				if(DDa[i+11][0].DP.dispold==1)
+//					continue;
+//				Lines2[i][PointCount-1] =DDa[i+11][0].DP.Dxy;
+//				if(DDa[i+11][0].DP.Dxy.X>GIXStartX+PointsPix)    //超出图框
+//				{
+//					//DDa[i][0].DP.Dxy.X = GIXStartX+400; //会产生误差
+//					r =1;
+//					continue;
+//				}
+//				if(DataSave.Data_type.DisLog[i+1+10][0].index[1] == OFF) //off状态下跳出
+//				{
+//					continue;
+//				}
+//				if(PointCount>1&&DataSave.Data_type.PageFlag == FPageGraph)   //只有页面切换到画图页面时才画
+//				{
+//					LCD_DrawPolygonLJ2(Lines2[i],PointCount,colors[i]);
+//				}
+//				if(PointCount==1||Rightframe==1)
+//				{
+
+////					if(i<1)
+////						sprintf(str," %d ",i+1+10);
+////					else
+//					sprintf(str," %d ",i+1+10);
+//					TextColor=LCD_GetTextColor();
+//					BackColor=LCD_GetBackColor();
+//					if(CURV.COL-1>10)  //越出
+//					{
+//					}
+//					else
+//					{
+//						col = CURV.COL-1;
+//					}
+//					if(i== col )
+//						LCD_SetColors(colors[i],LCD_COLOR_WHITE);
+//					else
+//						LCD_SetColors(LCD_COLOR_WHITE,colors[i]);
+//					if(flag==0)
+//					{
+//						if(DataSave.Data_type.PageFlag == FPageGraph)
+//						{
+//							LCD_FillRectLJ(x-4-1, y,52,PointsPiy2,LCD_COLOR_BLACK);   // 擦完马上画
+//						}
+//						flag = 1;
+//					}
+//					if(DataSave.Data_type.PageFlag == FPageGraph)
+//					{
+//						LCD_DrawHLineLJ(8+30, Lines2[i][0].Y, 12,colors[i]);
+//						//保证指示箭头不超出
+//						if((Lines2[i][0].Y+8)>GIXStartY)
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i][0].Y-15, (uint8_t* )str,&Font16);
+//						else if((Lines2[i][0].Y-8)<GIXEndY)
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i][0].Y, (uint8_t* )str,&Font16);
+//						else
+//							LCD_DisplayStringLine_EN_CH_LJ_WithFont(8,  Lines2[i][0].Y-8, (uint8_t* )str,&Font16);
+//					}
+//					LCD_SetColors(TextColor,BackColor);
+//					if(i== 1)
+//						Rightframe = 0;  //画完把标志清0
+//				}
+//			}
+//		}
+//	}
     return r;
 }
 

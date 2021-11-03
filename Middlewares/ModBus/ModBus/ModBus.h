@@ -21,7 +21,7 @@ void PresetMulReg(u8 *pointer_1,u8 *pointer_2);//预制多个寄存器
 void ErrorHandle(u8 Mode,u8 *Pointer);//错误信息帧处理
 u16 CRC16(u8 *puchMsgg,u8 usDataLen);//用于计算CRC校验码
 
-extern u8 ModBusMod[10];
+extern u8 ModBusMod[12];
 #define MODBUS_ENABLE  1                  //定义MODBUS_ENABLE 开启modbus
 //#define LAN_SERIANET   1                  //开启网络透传，与MODBUS_ENABLE只能定义一个，同时定义，优先开启modbus 
 #endif

@@ -18,6 +18,7 @@ uint8_t ucTemp;
 struct ChanalData ChanData;
 struct ChanalMData ChanMData;  // 快速模式
 struct ChanalSet ChanSet;
+struct ChanalHSet ChanHSet;
 struct SLData chTemp;//端子内部温度
 volatile uint8_t  UartCmd;
 union SD_U Dsd;//sd卡存储数据
@@ -654,6 +655,134 @@ void UpDataTemp(void)
 void SetChanSetMod(void)
 {
     uint32 i=0;
+    for(i=0; i<10; i++)
+    {
+        if(DisLog[2+i][0].index[1] == OFF)  //
+        {
+            ChanSet.Mod[i] = 1; //关闭
+            ModBusMod[i] = ChanSet.Mod[i];
+        }
+        else if(DisLog[2+i][0].index[1] == VDC)  //电压模式
+        {
+            ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//16 17是电压模式
+            ModBusMod[i] = ChanSet.Mod[i];
+        }
+        else if(DisLog[2+i][0].index[1] == VT)  //温度模式
+        {
+            ChanSet.Mod[i] = 2+DisLog[2+i][1].index[2];
+            ModBusMod[i] = ChanSet.Mod[i];
+        }
+        else if(DisLog[2+i][0].index[1] == VR)  //湿度模式 默认是电压可能是电流
+        {
+            if(DisLog[2+i][1].index[21]==0)  //AM2305
+            {
+				if(i < 11)
+				{
+					ChanHSet.Mod[i-9] = 2;//AM2305
+				}else{
+					ChanHSet.Mod[i-10] = 2;//AM2305
+				}
+                ModBusMod[i] = 21;
+            }
+            else if(DisLog[2+i][1].index[21]==1)    //大电流  由小电压转换而来
+            {
+                DisLog[2+i][2].index[3] = 0;
+               if(i < 11)
+				{
+					ChanHSet.Mod[i-9] = 3;//HT800
+				}else{
+					ChanHSet.Mod[i-10] = 3;//HT800
+				}
+                ModBusMod[i] = 22;
+            }
+            else if(DisLog[2+i][1].index[21]==2)
+            {
+                DisLog[2+i][2].index[3] = 1;
+                if(i < 11)
+				{
+					ChanHSet.Mod[i-9] = 4;//AC3000
+				}else{
+					ChanHSet.Mod[i-10] = 4;//AC3000
+				}
+                ModBusMod[i] = 23;
+            }
+        }
+        else if(DisLog[2+i][0].index[1] == VI)  //电流
+        {
+            if(DisLog[2+i][1].index[22]==0)  //小电流
+            {
+                ChanSet.Mod[i] = 18;//电流模式
+                ModBusMod[i] = ChanSet.Mod[i];
+            }
+            else if(DisLog[2+i][1].index[22]==1)    //大电流  由小电压转换而来
+            {
+                DisLog[2+i][2].index[3] = 0;
+                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//16 是电压模式
+                ModBusMod[i] = 19;
+            }
+            else if(DisLog[2+i][1].index[22]==2)
+            {
+                DisLog[2+i][2].index[3] = 1;
+                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//17是电压模式
+                ModBusMod[i] = 20;
+            }
+        }
+        else if(DisLog[2+i][0].index[1] == VG)  //重力模式
+        {
+            if(DisLog[2+i][1].index[23]==0)  //小电流
+            {
+                ChanSet.Mod[i] = 18;//电流模式
+                ModBusMod[i] = 24;
+            }
+            else if(DisLog[2+i][1].index[23]==1)    //大电流  由小电压转换而来
+            {
+                DisLog[2+i][2].index[3] = 0;
+                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//16 是电压模式
+                ModBusMod[i] = 25;
+            }
+            else if(DisLog[2+i][1].index[23]==2)
+            {
+                DisLog[2+i][2].index[3] = 1;
+                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//17是电压模式
+                ModBusMod[i] = 26;
+            }
+        }
+        else
+        {
+            ChanSet.Mod[i] = 0;   //保持不变
+            ModBusMod[i] = 0;
+        }
+    }
+	for(i=0;i<2;i++)
+	{
+		if(DisLog[13+i][0].index[1] == VR)  //湿度模式 默认是电压可能是电流
+        {
+            if(DisLog[13+i][1].index[21]==0)  //AM2305
+            {
+				ChanHSet.Mod[i+1] = 2;//AM2305
+                ModBusMod[i+10] = 21;
+            }
+            else if(DisLog[13+i][1].index[21]==1)    //大电流  由小电压转换而来
+            {
+                DisLog[13+i][2].index[3] = 0;
+				ChanHSet.Mod[i+1] = 3;//HT800
+                ModBusMod[i+10] = 22;
+            }
+            else if(DisLog[13+i][1].index[21]==2)
+            {
+				ChanHSet.Mod[i+1] = 4;//AC3000
+                ModBusMod[i+10] = 23;
+            }
+        }else{
+            ChanHSet.Mod[i+1] = 0;   //保持不变
+            ModBusMod[i+10] = 0;
+        }
+	}
+}
+
+void SetChanSetMod2(void)
+{
+    uint32 i=0;
     for(i=0; i<12; i++)
     {
         if(DisLog[2+i][0].index[1] == OFF)  //
@@ -673,21 +802,21 @@ void SetChanSetMod(void)
         }
         else if(DisLog[2+i][0].index[1] == VR)  //湿度模式 默认是电压可能是电流
         {
-            if(DisLog[2+i][1].index[21]==0)  //小电流
+            if(DisLog[2+i][1].index[21]==0)  //AM2305
             {
-                ChanSet.Mod[i] = 18;//电流模式
+                ChanHSet.Mod[i-8] = 2;//AM2305
                 ModBusMod[i] = 21;
             }
             else if(DisLog[2+i][1].index[21]==1)    //大电流  由小电压转换而来
             {
                 DisLog[2+i][2].index[3] = 0;
-                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//16 是电压模式
+                ChanHSet.Mod[i-8] = 3;//HT800
                 ModBusMod[i] = 22;
             }
             else if(DisLog[2+i][1].index[21]==2)
             {
                 DisLog[2+i][2].index[3] = 1;
-                ChanSet.Mod[i] = 16+DisLog[2+i][2].index[3];//17是电压模式
+                ChanHSet.Mod[i-8] = 4;//AC3000
                 ModBusMod[i] = 23;
             }
         }
@@ -965,6 +1094,53 @@ float DoSW(const float  val,uint8 i)
     return res;
 }
 
+float DoSWHmd(const float  val,uint8 i)
+{
+    float x = 1.0F;
+    float y = 0.0F;
+    float res = 0;
+	uint8 j,k;
+	if(i==1)
+	{
+		j=11;
+		k=10;
+	}else if(i == 3){
+		j=13;
+		k=11;
+	}else if(i == 5){
+		j=14;
+		k=12;
+	}
+    if(DisLog[j][0].index[1] == OFF)  //
+    {
+        ;
+    }
+    
+    else if(DisLog[j][0].index[1] == VR)  //湿度模式 默认是电压可能是电流
+    {
+        if(DisLog[j][1].index[DisLog[j][1].cind]==0)  //小电流mA-%
+        {
+            x =(DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval)/(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval);
+            y = DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval*x);
+//            res = val*1000.0F*x +y;
+			res = val*x +y;
+        }
+        else if(DisLog[j][1].index[DisLog[j][1].cind]==1)    //电压V-%
+        {
+            x =(DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval)/(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval);
+            y = DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval*x);
+            res = val*x +y;
+        }
+        else if(DisLog[j][1].index[DisLog[j][1].cind]==2)   //电压V-%
+        {
+            x =(DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval)/(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-DataSave.Data_type.VRLowA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval);
+            y = DataSave.Data_type.VRUpB[DisLog[j][1].index[DisLog[j][1].cind]][k].fval-(DataSave.Data_type.VRUpA[DisLog[j][1].index[DisLog[j][1].cind]][k].fval*x);
+            res = val*x +y;
+        }
+
+    }
+    return res;
+}
 
 //滤波器
 float DoFiler(const float  val, int span,uint8 ch)
@@ -1104,6 +1280,13 @@ void DoUart_task(void *p_arg)
         DoUarttick = HAL_GetTick(); //计数看收到数据的毫秒数
         //截屏功能
         DoScreen();
+		
+		SendReadTandH(ChanSet);
+		time=GetTotalTime(&ChanSet);
+		OSSemPend(&Uart_CMD,time,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
+        UartCmdT = UartCmd;
+		
+		
         if(MDataF==ON)//处于快存状态
             SendReadFData(ChanMData.ch,10);
         else
@@ -1121,11 +1304,11 @@ void DoUart_task(void *p_arg)
         OSSemPend(&Uart_CMD,time,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
         UartCmdT = UartCmd;
 		
-		SendReadTandH(ChanSet);
-		time=GetTotalTime(&ChanSet);
-		OSSemPend(&Uart_CMD,time,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
-        UartCmdT = UartCmd;
-        if( UartCmdT ==CmdR_TandH/*CmdR_DATA*/&&CAMold == SampleTimeCur.CAM&&ZoneCAMold ==ZoneCur.CAM)
+//		SendReadTandH(ChanSet);
+//		time=GetTotalTime(&ChanSet);
+//		OSSemPend(&Uart_CMD,time,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
+//        UartCmdT = UartCmd;
+        if( UartCmdT ==/*CmdR_TandH*/CmdR_DATA&&CAMold == SampleTimeCur.CAM&&ZoneCAMold ==ZoneCur.CAM)
         {
             if(DataSave.Data_type.PageFlag == FPageCh )//只有在画图页面时才画
             {
@@ -1146,10 +1329,23 @@ void DoUart_task(void *p_arg)
                     AlarmCnt++;   //报警输出脉冲计数
                 if(SampleCnt>=SaveCnt)//到了存储节拍
                 {
-                    //存储数据刷新一次
-                    endticksamp=JiSuanXYsamp(&ChanData.chd[i],i,startticksamp,SampletimeMs[DataSave.Data_type.SaveSample],
-                                             ZoneData[ ZoneCur.CAM],&r1,LinenumSample);//坐标确定
-                    GetSDSaveData(startticksamp,endticksamp,ChanData.chd[i],i,UartCmdT&0xf);
+					if(i < 9)
+					{
+						//存储数据刷新一次
+						endticksamp=JiSuanXYsamp(&ChanData.chd[i],i,startticksamp,SampletimeMs[DataSave.Data_type.SaveSample],
+												 ZoneData[ ZoneCur.CAM],&r1,LinenumSample);//坐标确定
+						GetSDSaveData(startticksamp,endticksamp,ChanData.chd[i],i,UartCmdT&0xf);
+					}else if(i > 10){
+						//存储数据刷新一次
+						endticksamp=JiSuanXYsamp2(&ChanData.hmd[(i-10)*2+1],i,startticksamp,SampletimeMs[DataSave.Data_type.SaveSample],
+												 ZoneData[ ZoneCur.CAM],&r1,LinenumSample);//坐标确定
+						GetSDSaveData(startticksamp,endticksamp,ChanData.hmd[(i-10)*2+1],i,UartCmdT&0xf);
+					}else if(i == 10){
+						//存储数据刷新一次
+						endticksamp=JiSuanXYsamp(&ChanData.hmd[1],9,startticksamp,SampletimeMs[DataSave.Data_type.SaveSample],
+												 ZoneData[ ZoneCur.CAM],&r1,LinenumSample);//坐标确定
+						GetSDSaveData(startticksamp,endticksamp,ChanData.hmd[1],i,UartCmdT&0xf);
+					}
                 }
                 endtick=UpDataDDa(starttick,i);
             }
@@ -1248,7 +1444,7 @@ void DoUart_task(void *p_arg)
 								SaveSD();
 								SaveUSBEXL(filenameUSB,UartCmdT);
                         }
-
+						
                         GetSDSaveTime(RTC_DateStrStartsamp,RTC_TimeStrStartsamp);//获取保持时间
                         startticksamp= HAL_GetTick();
                         r1=0;

@@ -35,13 +35,14 @@ extern uint8 cpyStr[256];
 
 uint8 SerialRemoteHandle(uint8 len,uint8 *buf,struct ChanalData *pCmd,struct ChanalMData *pMD);
 uint32 JiSuanXYsamp(struct SLData *p,uint8 i,uint32 starttick,uint32 NumMs,uint32 ZoneD,uint8 * pr1,uint16 XLen);
+uint32 JiSuanXYsamp2(struct SLData *p,uint8 i,uint32 starttick,uint32 NumMs,uint32 ZoneD,uint8 * pr1,uint16 XLen);
 void SendReSet(void);
 void SendReadTemp(void);
 
 //发送设置通道模式指令
 float BYTE3toFloat(uint8 *buf);
 void SendSetMod(const struct ChanalSet D);
-
+void SendSetHMod(const struct ChanalHSet D);
 //发送设置通道时间指令
 void FloattoBYTE4(float fval,uint8 *buf);
 void SendSetSYNCTime(const struct ChanalSet D);

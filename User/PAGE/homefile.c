@@ -1390,6 +1390,7 @@ void RDispStr2RDispPara(char* oldname,const struct RDispStr RP,struct RDispPara*
 struct CUR SampleTimeCurF= {0};  //SampleTime横向选择的游标
 static struct RDispData  DDaF[DCOL][ DCAMR];
 static struct RDispData  DFrqF[2];//+是放两个频率值
+static struct RDispData  DHmdF[6];//+是放6个温湿度
 RTC_TimeTypeDef RTC_TimeStrStartF;//时间
 RTC_DateTypeDef RTC_DateStrStartF;//日期
 union SD_U DsdF;//sd卡读出数据
@@ -1469,7 +1470,7 @@ void Dsd2DsdF(const union SD_U Dsd)
         memcpy(buf+i*3, DsdF.Data.FD[i].SDData.byte,sizeof(DsdF.Data.FD[i].SDData.byte));
         ChanDataF.frq[i].vcind = DsdF.Data.FD[i].SDData.vcind;
     }
-    for(i=0; i<CHANNUM; i++)
+    for(i=0; i<CHANNUM-1; i++)
     {
         memcpy(buf+6+i*3, DsdF.Data.CHD[i].SDData.byte,sizeof(DsdF.Data.CHD[i].SDData.byte));
         DDaF[i][0].vcind = DsdF.Data.CHD[i].SDData.vcind;
@@ -1483,7 +1484,14 @@ void Dsd2DsdF(const union SD_U Dsd)
         DFrqF[i].DP.dispold = 0;   //刷新标志 在dispold ==0 且 disp ==2 是数据显示才会刷新
         DFrqF[i].vcind = DsdF.Data.FD[i].SDData.vcind;
     }
-    for(i=0; i<CHANNUM; i++)
+	for(i=0; i<6; i++)//温湿度参数
+    {
+        DHmdF[i].DP.Num = ChanData.hmd[i].DfStr;//接收到数据更新
+        DHmdF[i].Uint[DHmdF[i].vcind].Col = ChanData.hmd[i].UintOne.Col;  // 显示单位刷新
+        DHmdF[i].DP.dispold = 0;   //刷新标志 在dispold ==0 且 disp ==2 是数据显示才会刷新
+        DHmdF[i].vcind = ChanData.hmd[i].vcind;
+    }
+    for(i=0; i<CHANNUM-1; i++)
     {
         UpDataDDaF(ChanDataF,i);
     }
@@ -1537,7 +1545,14 @@ uint8 RereadSDF(uint32 RCNTALL)
         DFrqF[i].DP.dispold = 0;   //刷新标志 在dispold ==0 且 disp ==2 是数据显示才会刷新
         DFrqF[i].vcind = DsdF.Data.FD[i].SDData.vcind;
     }
-    for(i=0; i<CHANNUM; i++)
+	for(i=0; i<6; i++)//温湿度参数
+    {
+        DHmdF[i].DP.Num = ChanData.hmd[i].DfStr;//接收到数据更新
+        DHmdF[i].Uint[DHmdF[i].vcind].Col = ChanData.hmd[i].UintOne.Col;  // 显示单位刷新
+        DHmdF[i].DP.dispold = 0;   //刷新标志 在dispold ==0 且 disp ==2 是数据显示才会刷新
+        DHmdF[i].vcind = ChanData.hmd[i].vcind;
+    }
+    for(i=0; i<CHANNUM-1; i++)
     {
 
         UpDataDDaF(ChanDataF,i);
@@ -1773,10 +1788,11 @@ void Stu_DisplayData_InitF(void)
 void USB_Str(char* str,char Feng)
 {
 
-    uint16 i;
+    uint16 i,k;
     char ptr[10];
     char ptr1[11];
-    for(i=1; i<11; i++)
+	uint8 j=9;
+    for(i=1; i<10; i++)
     {
         memset(ptr,0,sizeof(ptr));
         if(DDaF[i-1][0].vcind==OFF)
@@ -1785,30 +1801,56 @@ void USB_Str(char* str,char Feng)
         {
             NumFloat2Char(&DDaF[i-1][0],&DDaF[i-1][0].DP.Num,ptr);
             AddUint2Char(DDaF[i-1][0],ptr,9);
-        }
+        } 
         memset(ptr1,0,sizeof(ptr1));
         ptr1[0]=Feng;
         strcat(ptr1,ptr);
         strcat(str,ptr1);
     }
-    for(i=0; i<2; i++)
+	for(i=0; i<3; i++)
     {
         memset(ptr,0,sizeof(ptr));
-        if(DFrqF[i].vcind==OFF)
-        {
-            strcpy(ptr,"***\0");
-        }
-        else
-        {
-            NumFloat2Char(&DFrqF[i],&DFrqF[i].DP.Num,ptr);
-            AddUint2Char(DFrqF[i],ptr,9);
-        }
+//        if(DDaF[i-1][0].vcind==OFF)
+//            strcpy(ptr,"***\0");
+//        else
+//        {
+            NumFloat2Char(&DHmdF[i*2+1],&DHmdF[i*2+1].DP.Num,ptr);
+			
+            strncpy(ptr+9,"%",1);//湿度
+			for(k=0; k<9; k++)
+			{
+				if(ptr[k]=='\0')
+				{
+					ptr[k]=' ';
+					j=k;
+				}
+				if(k>j)
+					ptr[k]=' ';
+			}
+		//        } 
+				memset(ptr1,0,sizeof(ptr1));
+				ptr1[0]=Feng;
+				strcat(ptr1,ptr);
+				strcat(str,ptr1);
+			}
+//    for(i=0; i<2; i++)
+//    {
+//        memset(ptr,0,sizeof(ptr));
+//        if(DFrqF[i].vcind==OFF)
+//        {
+//            strcpy(ptr,"***\0");
+//        }
+//        else
+//        {
+//            NumFloat2Char(&DFrqF[i],&DFrqF[i].DP.Num,ptr);
+//            AddUint2Char(DFrqF[i],ptr,9);
+//        }
 
-        memset(ptr1,0,sizeof(ptr1));
-        ptr1[0]=Feng;
-        strcat(ptr1,ptr);
-        strcat(str,ptr1);
-    }
+//        memset(ptr1,0,sizeof(ptr1));
+//        ptr1[0]=Feng;
+//        strcat(ptr1,ptr);
+//        strcat(str,ptr1);
+//    }
 
 
 }
@@ -1970,7 +2012,8 @@ void InitUSBEXL(void)
         while(s != 0x14);
         RCNTALLF=0;
 
-        sprintf((char *)buf,"No,Time,CH01,CH02,CH03,CH04,CH05,CH06,CH07,CH08,CH09,CH10,PLS1,PLS2,");
+//        sprintf((char *)buf,"No,Time,CH01,CH02,CH03,CH04,CH05,CH06,CH07,CH08,CH09,CH10,PLS1,PLS2,");
+		sprintf((char *)buf,"No,Time,CH01,CH02,CH03,CH04,CH05,CH06,CH07,CH08,CH09,CH10,CH11,CH12,");
         rcnt = 0;
         do
         {
@@ -2057,7 +2100,7 @@ void SaveUSBEXL(char* TarName,uint8_t  UartCmd)
                 buf[0]='\n';
                 uitoa(++RCNTALLF,&buf[1]);
                 strcat(buf,",");
-                for(i=0; i<CHANNUM; i++)
+                for(i=0; i<CHANNUM+2; i++)
                 {
                     if(DDaF[i][0].DP.Dxy.X!=0)
                     {
@@ -2138,7 +2181,7 @@ void SD2USBEXL(char* TarName)
     }
     while(s != 0x14);
 
-    sprintf((char *)buf,"No,Time,CH01,CH02,CH03,CH04,CH05,CH06,CH07,CH08,CH09,CH10,PLS1,PLS2,");
+    sprintf((char *)buf,"No,Time,CH01,CH02,CH03,CH04,CH05,CH06,CH07,CH08,CH09,CH10,CH11,CH12,");
     rcnt=0;
     do
     {
@@ -2249,7 +2292,7 @@ void SD2USBTXT(char* TarName)
         s=CH376FileCreatePath(( u8*)filename);
     }
     while(s != 0x14);
-    sprintf((char *)buf,"No\tTime\tCH01\tCH02\tCH03\tCH04\tCH05\tCH06\tCH07\tCH08\tCH09\tCH10\tPLS1\tPLS2\t");
+    sprintf((char *)buf,"No\tTime\tCH01\tCH02\tCH03\tCH04\tCH05\tCH06\tCH07\tCH08\tCH09\tCH10\tCH11\tCH11\t");
     rcnt=0;
     do
     {

@@ -65,7 +65,7 @@ const struct RStr HEn[RStrNUM]=
     {"Off ","Hi","Low","Out" },
     {"20mA"},//电流值域
     {"999kg"},   //重力值域
-    {"I-S","0-1V","100V"},   //传感器
+    {"AM2305","HT800","AC3000"},   //传感器
     {"I-S","0-1V","100V"},   //传感器
     {"I-S","0-1V","100V"},   //传感器
 
@@ -335,6 +335,16 @@ void QFlashData_home_Init(void)
 			}
         }
     }
+	DisLog[1][0].index[DisLog[2][0].cind] = VT;
+	DisLog[2][0].index[DisLog[2][0].cind] = VT;
+	DisLog[3][0].index[DisLog[3][0].cind] = VT;
+	DisLog[4][0].index[DisLog[4][0].cind] = VT;
+	DisLog[5][0].index[DisLog[5][0].cind] = VT;
+	DisLog[6][0].index[DisLog[6][0].cind] = VT;
+	DisLog[7][0].index[DisLog[7][0].cind] = VT;
+	DisLog[8][0].index[DisLog[8][0].cind] = VT;
+	DisLog[9][0].index[DisLog[9][0].cind] = VT;
+	DisLog[10][0].index[DisLog[10][0].cind] = VT;
 	DisLog[11][0].index[DisLog[11][0].cind] = VR;
 	DisLog[13][0].index[DisLog[13][0].cind] = VR;
 	DisLog[14][0].index[DisLog[14][0].cind] = VR;
@@ -692,7 +702,10 @@ void Stu_Mid_Init(void)
                 DisLog[m][n].selold = 0;
             }
         }
-    DisLog[CurDisp.COL][CurDisp.CAM].sel= 1;
+    DisLog[CurDisp.COL+12][CurDisp.CAM].sel= 1;
+    DisLog[CurDisp.COL+12][CurDisp.CAM].selold = 0;
+    DisLog[CurDisp.COL+12][CurDisp.CAM].flag = 0;
+	DisLog[CurDisp.COL][CurDisp.CAM].sel= 1;
     DisLog[CurDisp.COL][CurDisp.CAM].selold = 0;
     DisLog[CurDisp.COL][CurDisp.CAM].flag = 0;
     DisLog[HCOL-1][0].sel= 1;
@@ -1384,18 +1397,23 @@ void page_home_cycle(const struct CUR cur)
 				LCD_DisplayStringLineLJ_Home(&DisLog[i+1][0],x-5+Xdiv,y+i*Ydiv,FONTTYPE16);
 			else
 				LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][0],x-5+Xdiv,y+i*Ydiv);
-			if(CHI == DataSave.Data_type.LANG)
+			if(i < 10)
 			{
-				if(DisLog[1+i][1].index[DisLog[1+i][1].cind]==0
-				   &&(DisLog[1+i][0].index[1] == VI||DisLog[1+i][0].index[1]==VR||DisLog[1+i][0].index[1] == VG))
+				if(CHI == DataSave.Data_type.LANG)
 				{
-					LCD_DisplayStringLineLJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv,FONTTYPE16);
+					if(DisLog[1+i][1].index[DisLog[1+i][1].cind]==0
+					   &&(DisLog[1+i][0].index[1] == VI||DisLog[1+i][0].index[1]==VR||DisLog[1+i][0].index[1] == VG))
+					{
+						LCD_DisplayStringLineLJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv,FONTTYPE16);
+					}
+					else
+						LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv);
 				}
 				else
 					LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv);
+			}else{
+				LCD_DisplayStringLineLJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv,FONTTYPE16);
 			}
-			else
-				LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1][1],x-5+Xdiv*2,y+i*Ydiv);
 			//因为中框会被清掉要加此句
 			if(DisLog[i+1][2].disp==2&&DisLog[i+1][2].dispold==1)
 			{
@@ -1426,8 +1444,8 @@ void page_home_cycle(const struct CUR cur)
 				LCD_DisplayStringLine_EN_CH_LJ_Home(&DisLog[i+1+12][0],x-5+Xdiv,y+i*Ydiv);
 			if(CHI == DataSave.Data_type.LANG)
 			{
-				if(DisLog[1+i+12][1].index[DisLog[1+i+12][1].cind]==0
-				   &&(DisLog[1+i+12][0].index[1] == VI||DisLog[1+i+12][0].index[1]==VR||DisLog[1+i+12][0].index[1] == VG))
+				if((DisLog[1+i+12][1].index[DisLog[1+i+12][1].cind]==0
+				   &&(DisLog[1+i+12][0].index[1] == VI||DisLog[1+i+12][0].index[1] == VG)) || DisLog[1+i+12][0].index[1]==VR)
 				{
 					LCD_DisplayStringLineLJ_Home(&DisLog[i+1+12][1],x-5+Xdiv*2,y+i*Ydiv,FONTTYPE16);
 		 		}

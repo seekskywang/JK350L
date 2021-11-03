@@ -92,15 +92,18 @@ void FlashTimeVal(struct ChanalSet *p);
 void Usart_SendStringL( USART_TypeDef * pUSARTx, uint8_t *str,uint8_t len);
 uint32 GetTotalTime(struct ChanalSet *p);
 void SetChanSetMod(void);
+void SetChanSetMod2(void);
 void SetChanSetTime(void);
 uint8 FileInit(void);
 void MovingAverage(const float  data[], int span,int Length);
 float DoFiler(const float  val, int span,uint8 ch);
 float DoSW(const float  val,uint8 i);
+float DoSWHmd(const float  val,uint8 i);
 extern uint8_t ScreenFlag;   //截屏标识
 extern UART_HandleTypeDef UartHandle;
 extern struct ChanalData ChanData;
 extern struct ChanalSet ChanSet;
+extern struct ChanalHSet ChanHSet;
 extern uint8 ShowTimeflag;
 extern OS_SEM  Uart_CMD;       //定义一个信号量，用于任务同步
 extern union SD_U Dsd;//sd卡存储数据

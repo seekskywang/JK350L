@@ -57,7 +57,7 @@ u16 HoldReg[522];   //Modbus寄存器
 u8 Input_Buffer[INPUT_IO_LENGTH];       //输入IO缓存
 u8 Output_Buffer[OUTPUT_IO_LENGTH ];    //输出IO缓存
 const static BYTE JKName [12] = {0x4A, 0x4B, 0x38, 0x34, 0x30, 0x00, 0x00,  0xA, 0x00, 0x00, 0x00, 0x00};
-uint8 ModBusMod[CHANNUM];
+uint8 ModBusMod[CHANNUM+2];
 //CRC校验查表用参数
 /* CRC 高位字节值表*/
 const static u8 auchCRCHi[] =

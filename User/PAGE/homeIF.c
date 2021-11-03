@@ -40,6 +40,7 @@ static const struct RStr IFEn[IFNUM]=
     {"Total","Actual "},//Âö³å2 Êä³ö
     {"Off","On "},//Í¬²½´¥·¢
 };
+
 static const struct HearStr IFHear[IFNUM]=
 {
     {"½Ó¿Ú±àºÅ:","USB ID:"},   //usb ±àºÅ
@@ -61,8 +62,6 @@ static const struct HelpStr helpS[IFNUM]=
     {"°ïÖú:Éè¶¨Âö³å¶þÊä³ö¡£\0","Please set PLS2 output.\0"},
     {"°ïÖú:Éè¶¨Í¬²½´¥·¢¡£\0","Please set synchronous trigger.\0"},
 };
-
-
 
 static const struct HearStr ParaS[DiaWifiCOL-1][DiaWifiCAM]=
 {
@@ -449,8 +448,7 @@ void WifiDiaFlash(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
     DisWifi[3][1].cind=16;
     DisWifi[3][1].index[DisWifi[3][1].cind] = 1;
     x1y1.Box.x1 =  30;//È¡µã
-    x1y1.Box.y1 =  60;//È¡µ
-    x2y2.Box.x2=  630;//È¡µã
+    x1y1.Box.y1 =  60;//È¡?    x2y2.Box.x2=  630;//È¡µã
     x2y2.Box.y2 = 360 ;//È¡µã
     Xdiv=80;
     Disp_Box_Zhi(x1y1.Box.x1, x1y1.Box.y1,x2y2.Box.x2, x2y2.Box.y2,LCD_COLOR_WHITE,LCD_COLOR_BLACK);
@@ -525,8 +523,7 @@ void WifiDiaInit(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
     u16toa(DataSave.Data_type.parameters.Port,DisWifi[2][0].Str,10);
     u16toa(DataSave.Data_type.parameters.modbus_id,DisWifi[2][1].Str,10);
     x1y1.Box.x1 =  30;//È¡µã
-    x1y1.Box.y1 =  60;//È¡µ
-    x2y2.Box.x2=  630;//È¡µã
+    x1y1.Box.y1 =  60;//È¡?    x2y2.Box.x2=  630;//È¡µã
     x2y2.Box.y2 = 360 ;//È¡µã
     Xdiv=80;
     Disp_Box_Zhi(x1y1.Box.x1, x1y1.Box.y1,x2y2.Box.x2, x2y2.Box.y2,LCD_COLOR_WHITE,LCD_COLOR_BLACK);
@@ -1329,7 +1326,7 @@ static void wifiDia(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
             }
         keytmp = KeyTaskCreate(NoNull_ReTurn);
         ModifyWifi(keytmp,RD,&DisLogOld,&Cur,DiaWifiCOL,DiaWifiCAM);
-        if(keytmp==KEY_ENTER&&Cur.COL<DiaWifiCOL-1)
+        if((keytmp==KEY_ENTER&&Cur.COL<DiaWifiCOL-1)||(keytmp==KEY_HIDE1&&Cur.COL<DiaWifiCOL-1))
             WifiDiaFlash(keytmp,RD, cur) ;
     }
     while(!(keytmp==KEY_ENTER&&Cur.COL==DiaWifiCOL-1)&&keytmp!=KEY_ESC&&!(keytmp==KEY_HIDE1&&Cur.COL==DiaWifiCOL-1)); //DCµÄ¶Ô»°¿òµÚ4ÐÐÊÇÈ·¶¨ºÍÈ¡Ïû°´Å¥
@@ -1641,7 +1638,6 @@ uint8 ModifyIF(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 
             }
             break;
         case KEY_FUNC1://½øÈëÏÔÊ¾ÉèÖÃ
-
             DataSave.Data_type.PageFlag =  FPageHome ;
             break;
         case KEY_FUNC2://½øÈëdata ´¦Àí
@@ -1731,6 +1727,7 @@ uint8 ModifyIF(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 
                         macESP8266_RST_LOW_LEVEL();
                         OSTaskDel ( &WIFITaskTCB, & err );
                         OSTaskDel ( &WIFICheckTaskTCB, & err );
+						macESP8266_RST_LOW_LEVEL();
                     }
                 }
             }

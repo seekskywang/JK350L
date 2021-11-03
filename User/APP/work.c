@@ -648,16 +648,16 @@ uint8 Modify(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 //
 				{
 					if(DataSave.Data_type.SW==0) //非报警模式显示
 					{
-						if(cur->PAGE == 0 && cur->COL < 11)
-						{
-							InPutManu(keytmp,&DisLog[cur->COL][cur->CAM],cur);
-							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
-							SetChanSetMod();
-							SendSetMod(ChanSet);
-							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
-							SaveCOL1(cur);
-							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
-						}
+//						if(cur->PAGE == 0 && cur->COL < 11)
+//						{
+//							InPutManu(keytmp,&DisLog[cur->COL][cur->CAM],cur);
+//							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
+//							SetChanSetMod();
+//							SendSetMod(ChanSet);
+//							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
+//							SaveCOL1(cur);
+//							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
+//						}
 					}
 				}
 				else if(cur->CAM==1&&cur->COL>0&&cur->COL<=HCOL-2)
@@ -676,10 +676,10 @@ uint8 Modify(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 //
 					{
 						if(cur->PAGE == 0 && cur->COL < 12)
 						{
-							VRVGDISensorManu(keytmp,&DisLog[cur->COL][cur->CAM],cur);
+							H3SensorManu(keytmp,&DisLog[cur->COL][cur->CAM],cur);
 							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
 							SetChanSetMod();
-							SendSetMod(ChanSet);
+							SendSetHMod(ChanHSet);
 							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
 							SaveCOL1(cur);
 							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
@@ -821,19 +821,19 @@ uint8 Modify(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 //
 			}else if(cur->PAGE == 1){
 				if(cur->CAM==0&&cur->COL>0&&cur->COL<=HCOL-2)  //第一列
 				{
-					if(DataSave.Data_type.SW==0) //非报警模式显示
-					{
-						if(cur->PAGE == 1 && cur->COL < 11)
-						{
-							InPutManu(keytmp,&DisLog[cur->COL+12][cur->CAM],cur);
-							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
-							SetChanSetMod();
-							SendSetMod(ChanSet);
-							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
-							SaveCOL1(cur);
-							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
-						}
-					}
+//					if(DataSave.Data_type.SW==0) //非报警模式显示
+//					{
+//						if(cur->PAGE == 1 && cur->COL < 11)
+//						{
+//							InPutManu(keytmp,&DisLog[cur->COL+12][cur->CAM],cur);
+//							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
+//							SetChanSetMod();
+//							SendSetMod(ChanSet);
+//							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
+//							SaveCOL1(cur);
+//							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
+//						}
+//					}
 				}
 				else if(cur->CAM==1&&cur->COL>0&&cur->COL<=HCOL-2)
 				{
@@ -851,10 +851,10 @@ uint8 Modify(uint8 keytmp,struct CUR* cur,struct CUR* curold)                 //
 					{
 						if(cur->PAGE == 1 && cur->COL < 11)
 						{
-							VRVGDISensorManu(keytmp,&DisLog[cur->COL+12][cur->CAM],cur);
+							H3SensorManu(keytmp,&DisLog[cur->COL+12][cur->CAM],cur);
 							OSTaskSuspend((OS_TCB*)&DoUartTaskTCB,&err);//挂起任务
 							SetChanSetMod();
-							SendSetMod(ChanSet);
+							SendSetHMod(ChanHSet);
 							OSSemPend(&Uart_CMD,100,OS_OPT_PEND_BLOCKING,0,&err); //请求信号量挂起
 							SaveCOL1(cur);
 							OSTaskResume((OS_TCB*)&DoUartTaskTCB,&err);
@@ -1178,6 +1178,85 @@ void VRVGDISensorManu(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
     page_home();
 }
 
+
+//湿度传感器下拉菜单
+void H3SensorManu(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
+{
+    struct BoxFram  box;
+    uint8 Ceng =0 ;
+    uint8 m;
+    struct RDispPara DisInPut[VRVGSensorCOL]= {0};
+    static struct RDispPara DisLogOld;
+    Ceng =Ceng ;
+    for(m=0; m<VRVGSensorCOL; m++)
+    {
+        DisInPut[m].flag = 0;
+        DisInPut[m].disp=0;
+        DisInPut[m].dispold=0;
+        DisInPut[m].lang = DataSave.Data_type.LANG;
+        DisInPut[m].cind=RD->cind;
+        DisInPut[m].index[DisInPut[m].cind]=m;
+    }
+    DisLogOld = *RD;
+    do
+    {
+        box=RD->Box;
+        Ceng = RD->Ceng;
+        Disp_Box_Zhi( box.x1,box.y2,box.x2,box.y2+(box.h+8)*VRVGSensorCOL,LCD_COLOR_WHITE,LCD_COLOR_BLACK);
+        for(m=0; m<VRVGSensorCOL; m++)
+        {
+            DisInPut[m].flag = 1;
+            DisInPut[m].disp=1;
+            DisInPut[m].dispold=0;
+            DisInPut[m].sel = 0;
+            DisInPut[m].selold=1;
+            DisInPut[m].Box.x1 = RD->Box.x1;
+            DisInPut[m].Box.y1 = RD->Box.y1+(box.h+8)*(m+1);
+            DisInPut[m].Box.x2 = RD->Box.x2 ;
+            DisInPut[m].Box.y2 = RD->Box.y2+(box.h+8)*(m+1);
+
+            DisInPut[m].FontCH.x1 = RD->FontCH.x1;
+            DisInPut[m].FontCH.y1 = RD->FontCH.y1+(box.h+8)*(m+1);
+            DisInPut[m].FontEN.x1 = RD->FontEN.x1;
+            DisInPut[m].FontEN.y1 = RD->FontEN.y1+(box.h+8)*(m+1);
+            if(DisInPut[m].FontCH.x1==0)
+            {
+                DisInPut[m].FontCH.x1 = RD->FontEN.x1;
+                DisInPut[m].FontCH.y1 = RD->FontEN.y1+(box.h+8)*(m+1);
+            }
+            else if(DisInPut[m].FontEN.x1==0)
+            {
+                DisInPut[m].FontEN.x1 = RD->FontCH.x1;
+                DisInPut[m].FontEN.y1 = RD->FontCH.y1+(box.h+8)*(m+1);
+            }
+            if(RD->index[RD->cind]==DisInPut[m].index[DisInPut[m].cind])
+            {
+                DisInPut[m].sel = 1;
+                DisInPut[m].selold=0;
+                DisInPut[m].flag = 0;
+            }
+            Disp_Box_Zi(&DisInPut[m],DisInPut[m].Box.x1,DisInPut[m].Box.y1,DisInPut[m].Box.x2,DisInPut[m].Box.y2);
+//            if(CHI == DataSave.Data_type.LANG)
+//            {
+//                if(m==SenI)
+                    LCD_DisplayStringLineLJ_Zi(&DisInPut[m],DisInPut[m].FontCH.x1,DisInPut[m].FontCH.y1,FONTTYPE16);
+//                else
+//                    LCD_DisplayStringLine_EN_CH_LJ_Zi(&DisInPut[m],DisInPut[m].FontCH.x1,DisInPut[m].FontCH.y1);
+//            }
+//            else
+//            {
+//                LCD_DisplayStringLine_EN_CH_LJ_Zi(&DisInPut[m],DisInPut[m].FontEN.x1,DisInPut[m].FontEN.y1);
+//            }
+        }
+        Disp_Box_Zhi2(  box.x1,box.y2,box.x2,box.y2+(box.h+8)*VRVGSensorCOL,LCD_COLOR_WHITE);
+        keytmp = KeyTaskCreate(NoNull_ReTurn);
+        ModifyCAM1(keytmp,RD,&DisLogOld,&CurDisp,VRVGSensorCOL,1);
+    }
+    while(keytmp!=KEY_ENTER&&keytmp!=KEY_ESC);
+    Stu_Mid_Init();
+    ModifyCAM1(keytmp,RD,&DisLogOld,&CurDisp,VRVGSensorCOL,1);
+    page_home();
+}
 
 //值域选择的下拉框的菜单
 void RangeManu(uint8 keytmp,struct RDispPara* RD,struct CUR* cur)
